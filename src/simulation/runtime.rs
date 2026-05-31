@@ -26,16 +26,21 @@ enum State {
     Done,
 }
 
+enum StepError {
+    InvalidAction,
+}
+
 pub enum Action {
     Start(ReplicaId),
     Wake(TimerId),
     Done,
 }
-enum StepError {
-    InvalidAction,
-}
 
 impl<S: Scheduler> Runtime<S> {
+    pub fn run(&mut self) -> Result<(), StepError> {
+        while let State::Running = self.step()? {}
+        Ok(())
+    }
     pub fn step(&mut self) -> Result<State, StepError> {
         let action = self.scheduler.decide(&self.context);
         match self.is_valid(&action) {
