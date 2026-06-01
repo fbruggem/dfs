@@ -1,3 +1,8 @@
+use std::path::{Path, PathBuf};
+
+use crate::abstraction::file_system::{File, FileSystem, OpenMode};
+use std::io;
+
 #[derive(Clone, Debug)]
 pub struct StdFs {
     root: PathBuf,
@@ -7,7 +12,7 @@ impl StdFs {
     /// Create a filesystem rooted at `root`. The directory is created
     /// if it doesn't exist. All `open` / `delete` paths are joined to
     /// this root (and forced to be relative).
-    pub fn new(root: impl AsRef<Path>) -> io::Result<Self> {
+    pub fn new(root: impl AsRef<Path>) -> std::io::Result<Self> {
         let root = root.as_ref().to_path_buf();
         std::fs::create_dir_all(&root)?;
         Ok(Self { root })
@@ -80,7 +85,7 @@ impl File for StdFile {
         io::Write::write(&mut self.inner, buf)
     }
 
-    fn lseek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+    fn lseek(&mut self, pos: io::SeekFrom) -> io::Result<u64> {
         io::Seek::seek(&mut self.inner, pos)
     }
 }
