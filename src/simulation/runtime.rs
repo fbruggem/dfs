@@ -50,10 +50,10 @@ impl<S: Scheduler> Runtime<S> {
     }
 
     fn execute(&mut self, action: Action) -> Result<State, StepError> {
-        Ok(State::Running)
+        unimplemented!()
     }
 
     fn is_valid(&self, action: &Action) -> bool {
-        true
+        unimplemented!()
     }
 }
