@@ -1,14 +1,14 @@
 use std::path::{Path, PathBuf};
 
-use crate::abstraction::file_system::{File, FileSystem, OpenMode};
+use crate::abstraction::file_system::{self, OpenMode};
 use std::io;
 
 #[derive(Clone, Debug)]
-pub struct StdFs {
+pub struct FileSystem {
     root: PathBuf,
 }
 
-impl StdFs {
+impl FileSystem {
     /// Create a filesystem rooted at `root`. The directory is created
     /// if it doesn't exist. All `open` / `delete` paths are joined to
     /// this root (and forced to be relative).
@@ -31,10 +31,10 @@ impl StdFs {
     }
 }
 
-impl FileSystem for StdFs {
-    type File = StdFile;
+impl file_system::FileSystem for FileSystem {
+    type File = File;
 
-    fn open(&self, path: &str, mode: OpenMode) -> io::Result<StdFile> {
+    fn open(&self, path: &str, mode: OpenMode) -> io::Result<File> {
         let full = self.resolve(path);
         if let Some(parent) = full.parent() {
             std::fs::create_dir_all(parent)?;
@@ -54,7 +54,7 @@ impl FileSystem for StdFs {
                 opts.append(true).create(true);
             }
         }
-        Ok(StdFile {
+        Ok(File {
             inner: opts.open(full)?,
         })
     }
@@ -65,11 +65,11 @@ impl FileSystem for StdFs {
 }
 
 #[derive(Debug)]
-pub struct StdFile {
+pub struct File {
     inner: std::fs::File,
 }
 
-impl File for StdFile {
+impl file_system::File for File {
     fn close(self) -> io::Result<()> {
         // If you care about flush/sync errors at close time, call
         // self.inner.sync_all()? before dropping.

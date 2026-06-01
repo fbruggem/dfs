@@ -3,7 +3,6 @@ mod stub;
 
 use std::fmt::Debug;
 use std::io::{self, SeekFrom};
-use std::path::{Path, PathBuf};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum OpenMode {

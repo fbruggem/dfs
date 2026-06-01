@@ -2,18 +2,18 @@ use std::collections::BTreeMap;
 use std::io::{self, SeekFrom};
 use std::sync::{Arc, Mutex};
 
-use crate::abstraction::file_system::{File, FileSystem, OpenMode};
+use crate::abstraction::file_system::{self, OpenMode};
 
 type Inode = Arc<Mutex<Vec<u8>>>;
 
 #[derive(Clone, Default, Debug)]
-pub struct MemFs {
+pub struct FileSystem {
     /// Cloning a `MemFs` clones the Arc — both handles see the same files.
     /// Construct fresh `MemFs::new()` instances when you want isolated FSes.
     inner: Arc<Mutex<BTreeMap<String, Inode>>>,
 }
 
-impl MemFs {
+impl FileSystem {
     pub fn new() -> Self {
         Self::default()
     }
@@ -30,10 +30,10 @@ impl MemFs {
     }
 }
 
-impl FileSystem for MemFs {
-    type File = MemFile;
+impl file_system::FileSystem for FileSystem {
+    type File = File;
 
-    fn open(&self, path: &str, mode: OpenMode) -> io::Result<MemFile> {
+    fn open(&self, path: &str, mode: OpenMode) -> io::Result<File> {
         // Hold the FS lock only long enough to clone out the Arc handle
         // to the file's contents.
         let inode: Inode = {
@@ -71,7 +71,7 @@ impl FileSystem for MemFs {
             0
         };
 
-        Ok(MemFile {
+        Ok(File {
             contents: inode,
             cursor,
             can_read,
@@ -90,7 +90,7 @@ impl FileSystem for MemFs {
 }
 
 #[derive(Debug)]
-pub struct MemFile {
+pub struct File {
     contents: Inode,
     cursor: u64,
     can_read: bool,
@@ -98,7 +98,7 @@ pub struct MemFile {
     append: bool,
 }
 
-impl File for MemFile {
+impl file_system::File for File {
     fn close(self) -> io::Result<()> {
         Ok(())
     }
