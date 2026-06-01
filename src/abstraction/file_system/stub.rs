@@ -85,9 +85,6 @@ impl FileSystem for MemFs {
         if fs.remove(path).is_none() {
             return Err(io::Error::new(io::ErrorKind::NotFound, path.to_string()));
         }
-        // POSIX-style: existing open handles keep working, because each
-        // one holds its own Arc<Mutex<Vec<u8>>>. The path is just gone
-        // from the directory.
         Ok(())
     }
 }
